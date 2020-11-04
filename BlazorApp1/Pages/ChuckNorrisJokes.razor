@@ -1,0 +1,41 @@
+﻿@page "/jokes"
+
+@inject IHttpClientFactory _clientFactory
+
+<h3>Chuck Norris Jokes</h3>
+<p>Reload the page to let chuck norris API render on your shitty browser!</p>
+
+@if (string.IsNullOrWhiteSpace(errorString) == false)
+{
+    <div class="h2"> @errorString</div>
+}
+else if ( jokes is null)
+{
+    <div>Loading...</div>
+}
+else
+{
+        <h4>@jokes.Value </h4>   
+}
+
+@code {     
+    BlazorApp1.Models.ChuckNorrisJokesModel jokes;
+    string errorString;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var request = new HttpRequestMessage(HttpMethod.Get, "https://api.chucknorris.io/jokes/random");
+        var client = _clientFactory.CreateClient();
+        HttpResponseMessage response = await client.SendAsync(request);
+
+        if (response.IsSuccessStatusCode)
+        {
+            jokes = await response.Content.ReadFromJsonAsync<ChuckNorrisJokesModel>();
+            errorString = null;
+        }
+        else
+        {
+            errorString = "Chuck Norris jokes are not available!";
+        }
+    }
+}
